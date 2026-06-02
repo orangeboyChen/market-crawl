@@ -1,7 +1,6 @@
 package interfaces
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -48,5 +47,5 @@ func (h *NetValueHandler) GetNetValueList(w http.ResponseWriter, r *http.Request
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(result)
+	w.Write(result)
 }

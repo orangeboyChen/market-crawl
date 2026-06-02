@@ -1,7 +1,6 @@
 package infrastructure
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -26,8 +25,8 @@ func NewCiticClient() *CiticClient {
 	}
 }
 
-// GetProductNav sends a GET request to the CITIC Wealth API and returns the response.
-func (c *CiticClient) GetProductNav(req domain.CiticProductNavRequest) (*domain.CiticProductNavResponse, error) {
+// GetProductNav sends a GET request to the CITIC Wealth API and returns the raw response bytes.
+func (c *CiticClient) GetProductNav(req domain.CiticProductNavRequest) ([]byte, error) {
 	httpReq, err := http.NewRequest(http.MethodGet, citicProductNavURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -50,10 +49,5 @@ func (c *CiticClient) GetProductNav(req domain.CiticProductNavRequest) (*domain.
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	var result domain.CiticProductNavResponse
-	if err := json.Unmarshal(respBody, &result); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
-	}
-
-	return &result, nil
+	return respBody, nil
 }

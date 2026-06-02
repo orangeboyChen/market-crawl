@@ -16,9 +16,9 @@ func NewCiticProductNavService(repo domain.CiticProductNavRepository) *CiticProd
 	return &CiticProductNavService{repo: repo}
 }
 
-// GetProductNav fetches the product NAV from the CITIC Wealth API.
+// GetProductNav fetches the product NAV from the CITIC Wealth API and returns raw response bytes.
 // startDate and endDate are expected in "2006-01-02" format and will be converted to "20060102".
-func (s *CiticProductNavService) GetProductNav(prodCode, startDate, endDate string) (*domain.CiticProductNavResponse, error) {
+func (s *CiticProductNavService) GetProductNav(prodCode, startDate, endDate string) ([]byte, error) {
 	req := domain.CiticProductNavRequest{
 		ProdCode:  prodCode,
 		StartDate: strings.ReplaceAll(startDate, "-", ""),

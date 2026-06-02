@@ -14,8 +14,8 @@ func NewNetValueService(repo domain.NetValueRepository) *NetValueService {
 	return &NetValueService{repo: repo}
 }
 
-// GetNetValueList fetches the net value list from the external API.
-func (s *NetValueService) GetNetValueList(prodId string, pageIndex, pageSize int) (*domain.NetValueResponse, error) {
+// GetNetValueList fetches the net value list from the external API and returns raw response bytes.
+func (s *NetValueService) GetNetValueList(prodId string, pageIndex, pageSize int) ([]byte, error) {
 	req := domain.NetValueRequest{
 		ProdId:    prodId,
 		PageIndex: pageIndex,

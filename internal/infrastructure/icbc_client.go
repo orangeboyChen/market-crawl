@@ -27,8 +27,8 @@ func NewICBCClient() *ICBCClient {
 	}
 }
 
-// GetNetValueList sends a POST request to the ICBC API and returns the response.
-func (c *ICBCClient) GetNetValueList(req domain.NetValueRequest) (*domain.NetValueResponse, error) {
+// GetNetValueList sends a POST request to the ICBC API and returns the raw response bytes.
+func (c *ICBCClient) GetNetValueList(req domain.NetValueRequest) ([]byte, error) {
 	body, err := json.Marshal(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
@@ -51,10 +51,5 @@ func (c *ICBCClient) GetNetValueList(req domain.NetValueRequest) (*domain.NetVal
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	var result domain.NetValueResponse
-	if err := json.Unmarshal(respBody, &result); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
-	}
-
-	return &result, nil
+	return respBody, nil
 }

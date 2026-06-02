@@ -1,7 +1,6 @@
 package interfaces
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"market-crawl/internal/application"
@@ -49,5 +48,5 @@ func (h *CiticProductNavHandler) GetProductNav(w http.ResponseWriter, r *http.Re
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(result)
+	w.Write(result)
 }
