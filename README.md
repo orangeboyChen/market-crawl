@@ -58,3 +58,24 @@ Fetches product NAV (Net Asset Value) data from CITIC within a date range.
 ```
 GET /api/citic-product-nav?prodCode=xxx&startDate=2026-01-01&endDate=2026-06-01
 ```
+
+---
+
+### 3. Get BOC Revenue List
+
+Fetches ten-thousand revenue list data from Bank of China (BOC).
+
+- **URL**: `GET /api/boc-revenue-list`
+- **Upstream**: `POST https://ebsnew.boc.cn/SAP/bocop/unlogin/ezdb/app/ten_thou_tevenue_list_info`
+- **Query Parameters**:
+
+| Parameter    | Type   | Required | Default | Description          |
+|--------------|--------|----------|---------|----------------------|
+| `strBakCode` | string | Yes      | -       | Product code         |
+| `fundCycle`  | string | Yes      | -       | Fund cycle (e.g. 5y) |
+
+- **Example**:
+
+```
+GET /api/boc-revenue-list?strBakCode=000509&fundCycle=5y
+```
