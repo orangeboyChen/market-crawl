@@ -43,7 +43,7 @@ func (s *BocRevenueService) GetRevenueList(strBakCode, fundCycle, baseDate strin
 		return resp.Items[i].SdtPeriod < resp.Items[j].SdtPeriod
 	})
 
-	// Find the base date index
+	// Find the base date index; if not found, insert a synthetic entry
 	baseIdx := -1
 	for i, item := range resp.Items {
 		if item.SdtPeriod == baseDate {
@@ -53,7 +53,19 @@ func (s *BocRevenueService) GetRevenueList(strBakCode, fundCycle, baseDate strin
 	}
 
 	if baseIdx == -1 {
-		return nil, fmt.Errorf("baseDate %s not found in response items", baseDate)
+		// Insert a synthetic item for the base date at the correct sorted position
+		syntheticItem := domain.BocRevenueItem{
+			SdtPeriod: baseDate,
+		}
+		// Find insertion point to maintain ascending order
+		insertIdx := sort.Search(len(resp.Items), func(i int) bool {
+			return resp.Items[i].SdtPeriod >= baseDate
+		})
+		// Insert at insertIdx
+		resp.Items = append(resp.Items, domain.BocRevenueItem{})
+		copy(resp.Items[insertIdx+1:], resp.Items[insertIdx:])
+		resp.Items[insertIdx] = syntheticItem
+		baseIdx = insertIdx
 	}
 
 	// Set NAV for the base date
