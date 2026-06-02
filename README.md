@@ -63,19 +63,25 @@ GET /api/citic-product-nav?prodCode=xxx&startDate=2026-01-01&endDate=2026-06-01
 
 ### 3. Get BOC Revenue List
 
-Fetches ten-thousand revenue list data from Bank of China (BOC).
+Fetches ten-thousand revenue list data from Bank of China (BOC) and calculates NAV for each item based on a known base date and NAV value.
 
 - **URL**: `GET /api/boc-revenue-list`
 - **Upstream**: `POST https://ebsnew.boc.cn/SAP/bocop/unlogin/ezdb/app/ten_thou_tevenue_list_info`
 - **Query Parameters**:
 
-| Parameter    | Type   | Required | Default | Description          |
-|--------------|--------|----------|---------|----------------------|
-| `strBakCode` | string | Yes      | -       | Product code         |
-| `fundCycle`  | string | Yes      | -       | Fund cycle (e.g. 5y) |
+| Parameter    | Type   | Required | Default | Description                                      |
+|--------------|--------|----------|---------|--------------------------------------------------|
+| `strBakCode` | string | Yes      | -       | Product code                                     |
+| `fundCycle`  | string | Yes      | -       | Fund cycle (e.g. 5y)                             |
+| `baseDate`   | string | Yes      | -       | Date with known NAV (YYYY-MM-DD)                 |
+| `baseNav`    | float  | Yes      | -       | Known NAV on the base date (e.g. 1.0344)         |
+
+- **NAV Calculation**:
+  - Forward: `nav[i] = nav[i-1] * (1 + tenThouRet[i] / 10000)`
+  - Backward: `nav[i] = nav[i+1] / (1 + tenThouRet[i+1] / 10000)`
 
 - **Example**:
 
 ```
-GET /api/boc-revenue-list?strBakCode=000509&fundCycle=5y
+GET /api/boc-revenue-list?strBakCode=000509&fundCycle=5y&baseDate=2026-06-01&baseNav=1.0344
 ```
