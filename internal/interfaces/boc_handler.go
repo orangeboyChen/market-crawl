@@ -2,6 +2,7 @@ package interfaces
 
 import (
 	"net/http"
+	"strconv"
 
 	"market-crawl/internal/application"
 )
@@ -16,7 +17,7 @@ func NewBocRevenueHandler(service *application.BocRevenueService) *BocRevenueHan
 	return &BocRevenueHandler{service: service}
 }
 
-// GetRevenueList handles GET /api/boc-revenue-list?strBakCode=xxx&fundCycle=xxx
+// GetRevenueList handles GET /api/boc-revenue-list?strBakCode=xxx&fundCycle=xxx&baseDate=2026-06-01&baseNav=1.0344
 func (h *BocRevenueHandler) GetRevenueList(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
@@ -35,7 +36,25 @@ func (h *BocRevenueHandler) GetRevenueList(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	result, err := h.service.GetRevenueList(strBakCode, fundCycle)
+	baseDate := r.URL.Query().Get("baseDate")
+	if baseDate == "" {
+		http.Error(w, "baseDate is required", http.StatusBadRequest)
+		return
+	}
+
+	baseNavStr := r.URL.Query().Get("baseNav")
+	if baseNavStr == "" {
+		http.Error(w, "baseNav is required", http.StatusBadRequest)
+		return
+	}
+
+	baseNav, err := strconv.ParseFloat(baseNavStr, 64)
+	if err != nil {
+		http.Error(w, "baseNav must be a valid number", http.StatusBadRequest)
+		return
+	}
+
+	result, err := h.service.GetRevenueList(strBakCode, fundCycle, baseDate, baseNav)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
