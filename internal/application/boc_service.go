@@ -38,12 +38,31 @@ func (s *BocRevenueService) GetRevenueList(strBakCode, fundCycle, baseDate strin
 		return nil, fmt.Errorf("failed to parse BOC response: %w", err)
 	}
 
+	// Filter out items where TenThouRet or SevenDayAnn is empty
+	filtered := make([]domain.BocRevenueItem, 0, len(resp.Items))
+	for _, item := range resp.Items {
+		if item.TenThouRet == "" || item.SevenDayAnn == "" {
+			continue
+		}
+		filtered = append(filtered, item)
+	}
+	resp.Items = filtered
+
+	// If no valid items remain, return early without items
+	if len(resp.Items) == 0 {
+		result, err := json.Marshal(resp)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal response: %w", err)
+		}
+		return result, nil
+	}
+
 	// Sort items by date ascending for calculation
 	sort.Slice(resp.Items, func(i, j int) bool {
 		return resp.Items[i].SdtPeriod < resp.Items[j].SdtPeriod
 	})
 
-	// Find the base date index; if not found, insert a synthetic entry
+	// Find the base date index
 	baseIdx := -1
 	for i, item := range resp.Items {
 		if item.SdtPeriod == baseDate {
@@ -53,46 +72,57 @@ func (s *BocRevenueService) GetRevenueList(strBakCode, fundCycle, baseDate strin
 	}
 
 	if baseIdx == -1 {
-		// Insert a synthetic item for the base date at the correct sorted position
-		syntheticItem := domain.BocRevenueItem{
-			SdtPeriod: baseDate,
-		}
-		// Find insertion point to maintain ascending order
+		// Base date not in items; find the nearest insertion point and use baseNav as a virtual anchor
 		insertIdx := sort.Search(len(resp.Items), func(i int) bool {
 			return resp.Items[i].SdtPeriod >= baseDate
 		})
-		// Insert at insertIdx
-		resp.Items = append(resp.Items, domain.BocRevenueItem{})
-		copy(resp.Items[insertIdx+1:], resp.Items[insertIdx:])
-		resp.Items[insertIdx] = syntheticItem
-		baseIdx = insertIdx
-	}
-
-	// Set NAV for the base date
-	resp.Items[baseIdx].Nav = strconv.FormatFloat(baseNav, 'f', 8, 64)
-
-	// Calculate NAV forward from base date (baseIdx+1 to end)
-	// nav[i] = nav[i-1] * (1 + tenThouRet[i] / 10000)
-	for i := baseIdx + 1; i < len(resp.Items); i++ {
-		prevNav, _ := strconv.ParseFloat(resp.Items[i-1].Nav, 64)
-		tenThouRet, err := strconv.ParseFloat(resp.Items[i].TenThouRet, 64)
-		if err != nil {
-			tenThouRet = 0
+		// Calculate NAV forward from insertIdx using baseNav as the virtual previous NAV
+		prevNav := baseNav
+		for i := insertIdx; i < len(resp.Items); i++ {
+			tenThouRet, err := strconv.ParseFloat(resp.Items[i].TenThouRet, 64)
+			if err != nil {
+				tenThouRet = 0
+			}
+			nav := prevNav * (1 + tenThouRet/10000)
+			resp.Items[i].Nav = strconv.FormatFloat(nav, 'f', 8, 64)
+			prevNav = nav
 		}
-		nav := prevNav * (1 + tenThouRet/10000)
-		resp.Items[i].Nav = strconv.FormatFloat(nav, 'f', 8, 64)
-	}
-
-	// Calculate NAV backward from base date (baseIdx-1 to 0)
-	// nav[i] = nav[i+1] / (1 + tenThouRet[i+1] / 10000)
-	for i := baseIdx - 1; i >= 0; i-- {
-		nextNav, _ := strconv.ParseFloat(resp.Items[i+1].Nav, 64)
-		tenThouRet, err := strconv.ParseFloat(resp.Items[i+1].TenThouRet, 64)
-		if err != nil {
-			tenThouRet = 0
+		// Calculate NAV backward from insertIdx-1 using baseNav as the virtual next NAV
+		nextNav := baseNav
+		for i := insertIdx - 1; i >= 0; i-- {
+			tenThouRet, err := strconv.ParseFloat(resp.Items[i+1].TenThouRet, 64)
+			if err != nil {
+				tenThouRet = 0
+			}
+			nav := nextNav / (1 + tenThouRet/10000)
+			resp.Items[i].Nav = strconv.FormatFloat(nav, 'f', 8, 64)
+			nextNav = nav
 		}
-		nav := nextNav / (1 + tenThouRet/10000)
-		resp.Items[i].Nav = strconv.FormatFloat(nav, 'f', 8, 64)
+	} else {
+		// Base date exists in items; set its NAV and propagate
+		resp.Items[baseIdx].Nav = strconv.FormatFloat(baseNav, 'f', 8, 64)
+
+		// Calculate NAV forward from base date (baseIdx+1 to end)
+		for i := baseIdx + 1; i < len(resp.Items); i++ {
+			prevNav, _ := strconv.ParseFloat(resp.Items[i-1].Nav, 64)
+			tenThouRet, err := strconv.ParseFloat(resp.Items[i].TenThouRet, 64)
+			if err != nil {
+				tenThouRet = 0
+			}
+			nav := prevNav * (1 + tenThouRet/10000)
+			resp.Items[i].Nav = strconv.FormatFloat(nav, 'f', 8, 64)
+		}
+
+		// Calculate NAV backward from base date (baseIdx-1 to 0)
+		for i := baseIdx - 1; i >= 0; i-- {
+			nextNav, _ := strconv.ParseFloat(resp.Items[i+1].Nav, 64)
+			tenThouRet, err := strconv.ParseFloat(resp.Items[i+1].TenThouRet, 64)
+			if err != nil {
+				tenThouRet = 0
+			}
+			nav := nextNav / (1 + tenThouRet/10000)
+			resp.Items[i].Nav = strconv.FormatFloat(nav, 'f', 8, 64)
+		}
 	}
 
 	// Sort items back to descending order (latest first, matching upstream format)
