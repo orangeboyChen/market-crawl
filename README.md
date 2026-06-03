@@ -76,9 +76,11 @@ Fetches ten-thousand revenue list data from Bank of China (BOC) and calculates N
 | `baseDate`   | string | Yes      | -       | Date with known NAV (YYYY-MM-DD)                 |
 | `baseNav`    | float  | Yes      | -       | Known NAV on the base date (e.g. 1.0344)         |
 
-- **NAV Calculation**:
-  - Forward: `nav[i] = nav[i-1] * (1 + tenThouRet[i] / 10000)`
-  - Backward: `nav[i] = nav[i+1] / (1 + tenThouRet[i+1] / 10000)`
+- **NAV Calculation** (dividend-reinvestment model, 红利再投资):
+  - `tenThouRet` is the absolute daily revenue per 10,000 shares (CNY); under
+    reinvestment the per-share daily increment is `tenThouRet / 10000`.
+  - Forward:  `nav[i] = nav[i-1] + tenThouRet[i]   / 10000`
+  - Backward: `nav[i] = nav[i+1] - tenThouRet[i+1] / 10000`
 
 - **Example**:
 

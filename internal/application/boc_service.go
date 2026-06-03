@@ -71,6 +71,13 @@ func (s *BocRevenueService) GetRevenueList(strBakCode, fundCycle, baseDate strin
 		}
 	}
 
+	// NAV propagation under the dividend-reinvestment (红利再投资) model:
+	//   tenThouRet is the absolute daily revenue per 10,000 shares (in CNY).
+	//   Under reinvestment, that revenue is added back to the share value, so the
+	//   per-share daily increment is exactly tenThouRet / 10000 (an additive amount,
+	//   independent of the current NAV level).
+	//   Forward:  nav[i] = nav[i-1] + tenThouRet[i]   / 10000
+	//   Backward: nav[i] = nav[i+1] - tenThouRet[i+1] / 10000
 	if baseIdx == -1 {
 		// Base date not in items; find the nearest insertion point and use baseNav as a virtual anchor
 		insertIdx := sort.Search(len(resp.Items), func(i int) bool {
@@ -83,7 +90,7 @@ func (s *BocRevenueService) GetRevenueList(strBakCode, fundCycle, baseDate strin
 			if err != nil {
 				tenThouRet = 0
 			}
-			nav := prevNav * (1 + tenThouRet/10000)
+			nav := prevNav + tenThouRet/10000
 			resp.Items[i].Nav = strconv.FormatFloat(nav, 'f', 8, 64)
 			prevNav = nav
 		}
@@ -94,7 +101,7 @@ func (s *BocRevenueService) GetRevenueList(strBakCode, fundCycle, baseDate strin
 			if err != nil {
 				tenThouRet = 0
 			}
-			nav := nextNav / (1 + tenThouRet/10000)
+			nav := nextNav - tenThouRet/10000
 			resp.Items[i].Nav = strconv.FormatFloat(nav, 'f', 8, 64)
 			nextNav = nav
 		}
@@ -109,7 +116,7 @@ func (s *BocRevenueService) GetRevenueList(strBakCode, fundCycle, baseDate strin
 			if err != nil {
 				tenThouRet = 0
 			}
-			nav := prevNav * (1 + tenThouRet/10000)
+			nav := prevNav + tenThouRet/10000
 			resp.Items[i].Nav = strconv.FormatFloat(nav, 'f', 8, 64)
 		}
 
@@ -120,7 +127,7 @@ func (s *BocRevenueService) GetRevenueList(strBakCode, fundCycle, baseDate strin
 			if err != nil {
 				tenThouRet = 0
 			}
-			nav := nextNav / (1 + tenThouRet/10000)
+			nav := nextNav - tenThouRet/10000
 			resp.Items[i].Nav = strconv.FormatFloat(nav, 'f', 8, 64)
 		}
 	}
