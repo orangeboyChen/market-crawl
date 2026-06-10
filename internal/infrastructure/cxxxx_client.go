@@ -9,25 +9,25 @@ import (
 	"market-crawl/internal/domain"
 )
 
-const citicProductNavURL = "https://wechat.citic-wealth.com/cms.product/api/custom/productInfo/getTAProductNav"
+const cxxxxProductNavURL = "https://example.com/"
 
-// CiticClient implements domain.CiticProductNavRepository by calling the CITIC Wealth API.
-type CiticClient struct {
+// CxxxxClient implements domain.CxxxxProductNavRepository by calling a placeholder API.
+type CxxxxClient struct {
 	httpClient *http.Client
 }
 
-// NewCiticClient creates a new CiticClient with a default timeout.
-func NewCiticClient() *CiticClient {
-	return &CiticClient{
+// NewCxxxxClient creates a new CxxxxClient with a default timeout.
+func NewCxxxxClient() *CxxxxClient {
+	return &CxxxxClient{
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
 		},
 	}
 }
 
-// GetProductNav sends a GET request to the CITIC Wealth API and returns the raw response bytes.
-func (c *CiticClient) GetProductNav(req domain.CiticProductNavRequest) ([]byte, error) {
-	httpReq, err := http.NewRequest(http.MethodGet, citicProductNavURL, nil)
+// GetProductNav sends a GET request to the placeholder API and returns the raw response bytes.
+func (c *CxxxxClient) GetProductNav(req domain.CxxxxProductNavRequest) ([]byte, error) {
+	httpReq, err := http.NewRequest(http.MethodGet, cxxxxProductNavURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}

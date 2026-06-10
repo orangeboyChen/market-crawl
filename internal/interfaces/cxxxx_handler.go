@@ -6,18 +6,18 @@ import (
 	"market-crawl/internal/application"
 )
 
-// CiticProductNavHandler handles HTTP requests for CITIC product NAV data.
-type CiticProductNavHandler struct {
-	service *application.CiticProductNavService
+// CxxxxProductNavHandler handles HTTP requests for product NAV data.
+type CxxxxProductNavHandler struct {
+	service *application.CxxxxProductNavService
 }
 
-// NewCiticProductNavHandler creates a new CiticProductNavHandler.
-func NewCiticProductNavHandler(service *application.CiticProductNavService) *CiticProductNavHandler {
-	return &CiticProductNavHandler{service: service}
+// NewCxxxxProductNavHandler creates a new CxxxxProductNavHandler.
+func NewCxxxxProductNavHandler(service *application.CxxxxProductNavService) *CxxxxProductNavHandler {
+	return &CxxxxProductNavHandler{service: service}
 }
 
 // GetProductNav handles GET /api/citic-product-nav?prodCode=xxx&startDate=2026-01-01&endDate=2026-06-01
-func (h *CiticProductNavHandler) GetProductNav(w http.ResponseWriter, r *http.Request) {
+func (h *CxxxxProductNavHandler) GetProductNav(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return

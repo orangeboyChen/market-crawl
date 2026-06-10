@@ -2,6 +2,10 @@
 
 A market data crawling service that provides APIs for querying fund/product net value data.
 
+## Disclaimer
+
+This repository is an independent personal project and has no official, authorized, or affiliated relationship with the companies referenced by prior upstream service examples or related entities.
+
 ## Running
 
 ```bash
@@ -40,28 +44,7 @@ GET /api/net-value-list?prodId=xxx&pageIndex=1&pageSize=10
 
 ---
 
-### 2. Get CITIC Product NAV
-
-Fetches product NAV (Net Asset Value) data from CITIC within a date range.
-
-- **URL**: `GET /api/citic-product-nav`
-- **Query Parameters**:
-
-| Parameter   | Type   | Required | Default | Description              |
-|-------------|--------|----------|---------|--------------------------|
-| `prodCode`  | string | Yes      | -       | Product code             |
-| `startDate` | string | Yes      | -       | Start date (YYYY-MM-DD)  |
-| `endDate`   | string | Yes      | -       | End date (YYYY-MM-DD)    |
-
-- **Example**:
-
-```
-GET /api/citic-product-nav?prodCode=xxx&startDate=2026-01-01&endDate=2026-06-01
-```
-
----
-
-### 3. Get BOC Revenue List
+### 2. Get BOC Revenue List
 
 Fetches ten-thousand revenue list data from Bank of China (BOC) and calculates NAV for each item based on a known base date and NAV value.
 

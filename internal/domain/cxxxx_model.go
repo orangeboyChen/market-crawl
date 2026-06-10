@@ -1,14 +1,14 @@
 package domain
 
-// CiticProductNavRequest represents the request parameters for fetching CITIC product NAV.
-type CiticProductNavRequest struct {
+// CxxxxProductNavRequest represents the request parameters for fetching product NAV.
+type CxxxxProductNavRequest struct {
 	ProdCode  string `json:"prodCode"`
 	StartDate string `json:"startDate"` // Format: yyyyMMdd
 	EndDate   string `json:"endDate"`   // Format: yyyyMMdd
 }
 
-// CiticProductNavResponse represents the raw response from the CITIC Wealth API.
-type CiticProductNavResponse struct {
+// CxxxxProductNavResponse represents the raw response from the placeholder API.
+type CxxxxProductNavResponse struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
